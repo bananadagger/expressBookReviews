@@ -35,49 +35,83 @@ public_users.post('/register', (req, res) => {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-  res.send(prettyFormat({ books }));
+  const booksPromise = new Promise((resolve, reject) => {
+    resolve(books);
+  });
+
+  booksPromise.then((books) => {
+    res.send(JSON.stringify({ books }, null, 4));
+  });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
-  const isbn = req.params.isbn;
-  res.send(prettyFormat(books[isbn]));
+  const bookPromise = new Promise((resolve, reject) => {
+    const isbn = req.params.isbn;
+    const matchedBook = books[isbn];
+
+    if (matchedBook) {
+      resolve(matchedBook);
+    } else {
+      reject('Unable to find book!');
+    }
+  });
+
+  bookPromise
+    .then((book) => {
+      res.send(JSON.stringify(book, null, 4));
+    })
+    .catch((error) => {
+      res.send(error);
+    });
 });
 
 // Get book details based on author
 public_users.get('/author/:author', function (req, res) {
-  const author = req.params.author;
-  const bookKeys = Object.keys(books);
-  const matchedBooks = {};
+  const booksPromise = new Promise((resolve, reject) => {
+    const author = req.params.author;
+    const bookKeys = Object.keys(books);
+    const matchedBooks = {};
 
-  for (const key of bookKeys) {
-    const book = books[Number(key)];
-    const isMatch = book.author === author;
+    for (const key of bookKeys) {
+      const book = books[Number(key)];
+      const isMatch = book.author === author;
 
-    if (isMatch) {
-      matchedBooks[key] = books[key];
+      if (isMatch) {
+        matchedBooks[key] = books[key];
+      }
     }
-  }
 
-  res.send(prettyFormat({ books: matchedBooks }));
+    resolve(matchedBooks);
+  });
+
+  booksPromise.then((books) => {
+    res.send(JSON.stringify({ books }, null, 4));
+  });
 });
 
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
-  const title = req.params.title;
-  const bookKeys = Object.keys(books);
-  const matchedBooks = {};
+  const booksPromise = new Promise((resolve, reject) => {
+    const title = req.params.title;
+    const bookKeys = Object.keys(books);
+    const matchedBooks = {};
 
-  for (const key of bookKeys) {
-    const book = books[Number(key)];
-    const isMatch = book.title === title;
+    for (const key of bookKeys) {
+      const book = books[Number(key)];
+      const isMatch = book.title === title;
 
-    if (isMatch) {
-      matchedBooks[key] = books[key];
+      if (isMatch) {
+        matchedBooks[key] = books[key];
+      }
     }
-  }
 
-  res.send(prettyFormat({ books: matchedBooks }));
+    resolve(matchedBooks);
+  });
+
+  booksPromise.then((books) => {
+    res.send(JSON.stringify({ books }, null, 4));
+  });
 });
 
 //  Get book review
